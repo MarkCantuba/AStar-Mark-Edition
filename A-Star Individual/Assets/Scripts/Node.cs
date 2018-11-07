@@ -22,10 +22,11 @@ public class Node : IComparer {
      * :param hCost -> Heuristic Cost, which will be the distance from this node to goal node.
      * :param x,y coordinate -> (x,y) location in which this node is placed in.
      */ 
-    public Node(int xCoordinate, int yCoordinate, int gCost, int hCost) {
+    public Node(int xCoordinate, int yCoordinate, int gCost, int hCost, bool isWalkable) {
         this.point = new Vector2(xCoordinate, yCoordinate);
         this.gCost = gCost;
         this.hCost = hCost;
+        this.walkable = isWalkable;
     }
 
     /*
