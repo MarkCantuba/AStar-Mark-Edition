@@ -33,6 +33,31 @@ public class WorldGrid : MonoBehaviour {
     }
 
 
+    public List<Node> GetNeighbors(Node node)
+    {
+        Vector2 nodePoint = WorldToGrid(node.point);
+        int x = (int)nodePoint.x;
+        int y = (int)nodePoint.y;
+        List<Node> neighbors = new List<Node>();
+
+        bool N, E, W, S;
+
+        N = (y < gridY);
+        S = (y >= 0);
+        E = (x < gridX);
+        W = (x >= 0);
+        if (N) neighbors.Add(gridNode[x, y + 1]);
+        if (S) neighbors.Add(gridNode[x, y - 1]);
+        if (E) neighbors.Add(gridNode[x + 1, y]);
+        if (W) neighbors.Add(gridNode[x - 1, y]);
+        if (N && E) neighbors.Add(gridNode[x + 1, y + 1]);
+        if (N && W) neighbors.Add(gridNode[x - 1, y + 1]);
+        if (S && E) neighbors.Add(gridNode[x + 1, y - 1]);
+        if (S && W) neighbors.Add(gridNode[x-1, y-1]);
+        
+        return neighbors;
+    }
+
     /*
      * Converts world Position to grid position. This is taken from the grid class 
      * from the pathfinding tutorial! Modified so it works for my grid version!
