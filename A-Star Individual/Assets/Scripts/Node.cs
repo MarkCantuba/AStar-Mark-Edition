@@ -1,14 +1,18 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-public class Node : IComparer {
+/*
+ * Node class that represents a tile in our grid.
+ */ 
+public class Node : System.IComparable<Node> {
 
-    public Vector2 point;
+    public Vector2 point;   // World Position of this node
 
-    public int gCost;
-    public int hCost;
+    public float gCost;  
+    public float hCost;
+    public Node parentNode;
 
-    public int FCost {
+    public float FCost {
         get {
             return this.gCost + this.hCost;
         }
@@ -22,33 +26,22 @@ public class Node : IComparer {
      * :param hCost -> Heuristic Cost, which will be the distance from this node to goal node.
      * :param x,y coordinate -> (x,y) location in which this node is placed in.
      */ 
-    public Node(int xCoordinate, int yCoordinate, int gCost, int hCost, bool isWalkable) {
+    public Node(int xCoordinate, int yCoordinate, bool isWalkable, float gCost=Mathf.Infinity, float hCost=Mathf.Infinity, Node parent=null) {
+        
         this.point = new Vector2(xCoordinate, yCoordinate);
+        this.walkable = isWalkable;
         this.gCost = gCost;
         this.hCost = hCost;
-        this.walkable = isWalkable;
+        this.parentNode = parent;
+        
     }
 
-    /*
-     * Comparator for this node object, for ordering nodes in accordance to their fCost!
-     * 1 if x > y
-     * -1 if x < y
-     * 0 if x == y
-     */ 
-    public int Compare(object x, object y) {
-        Node node1 = (Node) x;
-        Node node2 = (Node) y;
+    public int CompareTo(Node other) {
+        return this.FCost.CompareTo(other.FCost);
+    }
 
-        if (node1.FCost > node2.FCost) {
-            return 1;
-        }
+    public override string ToString() {
+        return "{ FCost: " + this.FCost + ",Position: " + this.point + " }";
 
-        else if (node1.FCost < node2.FCost) {
-            return -1;
-        }
-        
-        else {
-            return 0;
-        }
     }
 }
