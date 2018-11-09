@@ -5,74 +5,116 @@ using UnityEngine;
 public class Astar : MonoBehaviour {
 
     WorldGrid grid;
-    NodeHeapArray myNodeArray;
-    // Use this for initialization
+    private LinkedList<Node> finalPath = new LinkedList<Node>();
+    public float bias;  // Bias Value to improve our heuristic. In this case, it seems that the higher the bias value is, the less
+                        // nodes are checked!
+    
+
+
     void Start () {
         grid = GameObject.Find("Grid").GetComponent<WorldGrid>();
-        myNodeArray = new NodeHeapArray();
-        print(myNodeArray);
-
-        Node node1 = new Node(1, 1, false, 56, 100);
-        Node node2 = new Node(1, 1, false, 57, 100);
-        Node node3 = new Node(1, 1, false, 54, 100);
-        Node node4 = new Node(1, 1, false, 51, 100);
-        Node node5 = new Node(1, 1, false, 40, 100);
-        Node node6 = new Node(1, 1, false, 55, 100);
-        Node node7 = new Node(1, 1, false, 55, 100);
-
-        myNodeArray.Push(node1);
-        
-        myNodeArray.Push(node2);
-        myNodeArray.Push(node3);
-        myNodeArray.Push(node4);
-        myNodeArray.Push(node5);
-        myNodeArray.Push(node6);
-        myNodeArray.Push(node7);
-        print(myNodeArray);
-        print(myNodeArray.Pop());
-        print(myNodeArray);
-        print(myNodeArray.Pop());
-        print(myNodeArray);
-        print(myNodeArray.Pop());
-        print(myNodeArray);
     }
+
+    NodeHeapArray openSet = new NodeHeapArray();
+    List<Node> closedSet = new List<Node>();
 
     void AStar(Vector2 startPoint, Vector2 endPoint) {
 
         Vector2 playerGridPos = grid.WorldToGrid(startPoint);
-        Node startNode = grid.gridNode[(int)playerGridPos.x, (int)playerGridPos.y];
-        startNode.FCost = HeuristicCost(startPoint, endPoint);
-        startNode.gCost = 0;
-        startNode.neighbors = grid.GetNeighbors(startNode);
-        print(startNode + "<<<<<");
-        foreach (Node node in startNode.neighbors)
-        {
-            print(node);
+        Vector2 endPointGridPos = grid.WorldToGrid(endPoint);
+
+        Node playerNode = grid.gridNode[(int)playerGridPos.x, (int)playerGridPos.y];
+
+        playerNode.gCost = 0;
+        playerNode.hCost = HeuristicCost(playerGridPos, endPointGridPos, bias);
+
+        closedSet = new List<Node>();
+        openSet = new NodeHeapArray();
+
+        openSet.Push(playerNode);
+        
+        while (openSet.Count() > 0) {
+            Node current = openSet.Pop();
+            print(current.gCost);
+            closedSet.Add(current);
+
+            if (current.point == endPointGridPos) {
+                Node potato = current;
+                while (potato.parentNode != null) {
+                    finalPath.AddLast(potato);
+                    potato = potato.parentNode;
+                }
+
+                return;
+            }
+
+            //print(openSet + " <<< ");
+
+            foreach (Node node in grid.GetNeighbors(current)) {
+                if (!ClosedContains(node)) {
+                    float tempGScore = current.gCost + HeuristicCost(current.point, node.point);
+                    if (!openSet.Contains(node)) {
+                        openSet.Push(node);
+                    } else if (tempGScore >= current.gCost) {
+                        continue;
+                    }
+                    if (node.parentNode == null)
+                        node.parentNode = current;
+                    node.gCost = node.parentNode.gCost + HeuristicCost(current.point, node.point);
+                    node.hCost = HeuristicCost(node.point, endPointGridPos, bias);
+
+                    
+                }
+            }
         }
-
-        Vector2 goalGridPos = grid.WorldToGrid(endPoint);
-        Node endNode = grid.gridNode[(int)goalGridPos.x, (int)goalGridPos.y];
-        endNode.FCost = 0;
-
-        NodeHeapArray openSet = new NodeHeapArray();
-        List<Node> closedSet = new List<Node>();
-
-        openSet.Push(startNode);
-
-
-
-        return;
     }
 
     // Update is called once per frame
     void Update () {
-        if (Input.GetKeyDown(KeyCode.Space)) AStar(transform.position, GameObject.Find("GoalTile").transform.position);
+        if (Input.GetKeyDown(KeyCode.Space))
+            AStar(transform.position, GameObject.Find("GoalTile").transform.position);
 
 	}
 
-    float HeuristicCost(Vector2 nodePoint, Vector2 goalPoint, int biasValue=1) {
-        return Vector2.Distance(nodePoint, goalPoint) * biasValue;
+    float HeuristicCost(Vector2 nodePoint, Vector2 goalPoint, float biasValue=1) {
+        return Mathf.RoundToInt((Vector2.Distance(nodePoint, goalPoint))) * biasValue;
     }
-    
+
+    public bool ClosedContains(Node node) {
+        foreach (Node node1 in closedSet) {
+            if (node1.point == node.point) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void OnDrawGizmos() {
+        if (openSet.Count() > 0) {
+            foreach (Node node in openSet.nodeArray) {
+                if (node == null) continue;
+                Gizmos.color = Color.green;
+                Gizmos.DrawSphere(grid.GridToWorld(node.point, true), 0.2f);
+            }
+        }
+
+        if (closedSet.Count > 0) {
+            foreach (Node node in closedSet) {
+                if (node == null) continue;
+                Gizmos.color = Color.red;
+                Gizmos.DrawSphere(grid.GridToWorld(node.point, true), 0.2f);
+            }
+        }
+
+        if (finalPath!= null) {
+            foreach (Node node in finalPath) {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawSphere(grid.GridToWorld(node.point, true), 0.2f);
+            }
+        }
+    }
+
+
+
 }
 

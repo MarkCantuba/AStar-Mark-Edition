@@ -23,7 +23,7 @@ public class WorldGrid : MonoBehaviour {
             for (int j = 0; j < gridY; j++) {
                 Vector2 gridPos = new Vector2(i, j);
                 bool wallDetected = Physics2D.OverlapCircle(GridToWorld(gridPos + GetLeftCorner(), false), cellSize/2, wallMask);
-                gridNode[i, j] = new Node(i, j, !wallDetected);
+                gridNode[i, j] = new Node(i, j, !wallDetected, Mathf.Infinity, Mathf.Infinity);
                 GameObject walkable = Instantiate(tile, GridToWorld(new Vector2(i, j), false) + GetLeftCorner(), Quaternion.identity);
                 walkable.name = i + "," + j;
                 walkable.gameObject.GetComponentInChildren<TextMesh>().text = i + "," + j;
@@ -33,27 +33,47 @@ public class WorldGrid : MonoBehaviour {
     }
 
 
-    public List<Node> GetNeighbors(Node node)
-    {
-        Vector2 nodePoint = WorldToGrid(node.point);
-        int x = (int)nodePoint.x;
-        int y = (int)nodePoint.y;
+    /*
+     * Get given node's neighbors. Taken from the tutorial on path finding and modified,
+     * so it works with my implementation. It always consider diagonal moves.
+     * Also, it only consider within bounds nodes and excludes walls!
+     */ 
+    public List<Node> GetNeighbors(Node node) {
+
+        int x = (int)node.point.x;
+        int y = (int)node.point.y;
         List<Node> neighbors = new List<Node>();
 
         bool N, E, W, S;
 
-        N = (y < gridY);
-        S = (y >= 0);
-        E = (x < gridX);
-        W = (x >= 0);
-        if (N) neighbors.Add(gridNode[x, y + 1]);
-        if (S) neighbors.Add(gridNode[x, y - 1]);
-        if (E) neighbors.Add(gridNode[x + 1, y]);
-        if (W) neighbors.Add(gridNode[x - 1, y]);
-        if (N && E) neighbors.Add(gridNode[x + 1, y + 1]);
-        if (N && W) neighbors.Add(gridNode[x - 1, y + 1]);
-        if (S && E) neighbors.Add(gridNode[x + 1, y - 1]);
-        if (S && W) neighbors.Add(gridNode[x-1, y-1]);
+        N = (y < gridY - 1);
+        S = (y > 0);
+        E = (x < gridX - 1);
+        W = (x > 0);
+        if (N && gridNode[x, y + 1].walkable) { 
+            neighbors.Add(gridNode[x, y + 1]);
+        }
+        if (S && gridNode[x, y - 1].walkable) {
+            neighbors.Add(gridNode[x, y - 1]);
+        }
+        if (E && gridNode[x + 1, y].walkable) {
+            neighbors.Add(gridNode[x + 1, y]);
+        }
+        if (W && gridNode[x - 1, y].walkable) {
+            neighbors.Add(gridNode[x - 1, y]);
+        }
+        if (N && E && gridNode[x + 1, y + 1].walkable) { 
+            neighbors.Add(gridNode[x + 1, y + 1]);
+        }
+        if (N && W && gridNode[x - 1, y + 1].walkable) {
+            neighbors.Add(gridNode[x - 1, y + 1]);
+        }
+        if (S && E && gridNode[x + 1, y - 1].walkable) {
+            neighbors.Add(gridNode[x + 1, y - 1]);
+        }
+        if (S && W && gridNode[x - 1, y - 1].walkable) {
+            neighbors.Add(gridNode[x - 1, y - 1]);
+        }
         
         return neighbors;
     }
@@ -79,11 +99,15 @@ public class WorldGrid : MonoBehaviour {
      * Slight modification to offSet Value!
      */
     public Vector2 GridToWorld(Vector2 gridPos, bool centered) {
-        float offSetVal = centered ? cellSize / 2.0f : 0.0f;
-        float worldPosX = transform.position.x + gridPos.x * cellSize + offSetVal;
-        float worldPosY = transform.position.y + gridPos.y * cellSize + offSetVal;
+        if (!centered) {
+            float worldPosX = transform.position.x + gridPos.x * cellSize;
+            float worldPosY = transform.position.y + gridPos.y * cellSize;
+            return new Vector2(worldPosX, worldPosY);
+        }
 
-        return new Vector2(worldPosX, worldPosY);
+        float worldPosA = transform.position.x + gridPos.x * cellSize;
+        float worldPosB = transform.position.y + gridPos.y * cellSize;
+        return new Vector2(worldPosA, worldPosB) + GetLeftCorner();
     }
 
     /*

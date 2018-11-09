@@ -9,7 +9,7 @@ using UnityEngine;
  */
 public class NodeHeapArray {
 
-    List<Node> nodeArray;
+    public List<Node> nodeArray;
     int count;
 
     /*
@@ -158,6 +158,21 @@ public class NodeHeapArray {
      */ 
     public int GetParent(int index) {
         return (index) / 2;
+    }
+
+    /*
+     * Check if item contains a certain node.
+     */ 
+    public bool Contains(Node node) {
+        if (this.Count() == 0) {
+            return false;
+        }
+        for (int i = 1; i <= count; i++) {
+            if (nodeArray[i].point == node.point) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /*
