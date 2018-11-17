@@ -9,28 +9,73 @@ public class WorldGrid : MonoBehaviour {
     [Range(1, 1000)] public int gridX = 1;
     [Range(1, 1000)] public int gridY = 1;
     LayerMask wallMask;
-    public GameObject tile;
     public bool drawGrid = false;
+    public GameObject wall;
+    LayerMask goal;
+
+    /*
+     * Add a button that generates a randomly generated map (by map i mean place random
+     * walls within grid xD).
+     */ 
+    private void OnGUI() {
+        if (GUI.Button(new Rect(10, 10, 50, 20), "CreateNewGrid")) {
+            foreach (Transform wall in GameObject.Find("Walls").transform) {
+                Destroy(wall.gameObject);
+            }
+            gridNode = new Node[gridX, gridY];
+            AddRandomWalls();
+            wallMask = LayerMask.GetMask(new string[] { "wall"});           
+            gridNode = new Node[gridX, gridY];
+            for (int i = 0; i < gridX; i++) {
+                for (int j = 0; j < gridY; j++) {
+                    Vector2 gridPos = new Vector2(i, j);
+                    bool wallDetected = Physics2D.OverlapCircle(GridToWorld(gridPos + GetLeftCorner(), false), cellSize / 2, wallMask);
+                    gridNode[i, j] = new Node(i, j, !wallDetected, Mathf.Infinity, Mathf.Infinity);
+                }
+            }
+        }
+    }
 
     /*
      * Initialize our grid nodes. It creates a grid of tile sprites (also viewable in game view!) 
      * with their corresponding coordinates attached as text mesh on them!
-     */ 
+     */
     private void Awake() {
+        gridNode = new Node[gridX, gridY];
+        AddRandomWalls();
         wallMask = LayerMask.GetMask(new string[] { "wall" });
         gridNode = new Node[gridX, gridY];
         for (int i = 0; i < gridX; i++) {
             for (int j = 0; j < gridY; j++) {
                 Vector2 gridPos = new Vector2(i, j);
-                bool wallDetected = Physics2D.OverlapCircle(GridToWorld(gridPos + GetLeftCorner(), false), cellSize/2, wallMask);
+                bool wallDetected = Physics2D.OverlapCircle(GridToWorld(gridPos + GetLeftCorner(), false), cellSize / 2, wallMask);
                 gridNode[i, j] = new Node(i, j, !wallDetected, Mathf.Infinity, Mathf.Infinity);
-                GameObject walkable = Instantiate(tile, GridToWorld(new Vector2(i, j), false) + GetLeftCorner(), Quaternion.identity);
-                walkable.name = i + "," + j;
-                walkable.gameObject.GetComponentInChildren<TextMesh>().text = i + "," + j;
-                
             }
         }
     }
+
+    /*
+     * Add walls to random coordinates in our grid. Good for testing!
+     */ 
+    void AddRandomWalls() {
+        for (int i = 0; i < gridX; i++) {
+            for (int j = 0; j < gridY; j++) {
+                int randomNumber = Random.Range(-2, 2);
+                Vector2 gridPos = new Vector2(i, j);
+                goal = LayerMask.GetMask(new string[] { "goal" , "player"});
+                bool wallDetected = Physics2D.OverlapCircle(GridToWorld(gridPos, false) + GetLeftCorner(), cellSize, goal);
+                if (randomNumber == 1) { 
+                    if (wallDetected) {
+                        continue;
+                    } else {
+                        GameObject unwalkable = Instantiate(wall, GridToWorld(new Vector2(i, j), false) + GetLeftCorner(), Quaternion.identity);
+                        unwalkable.transform.parent = GameObject.Find("Walls").transform;
+                    }
+                }
+            }   
+        }
+    }
+
 
 
     /*

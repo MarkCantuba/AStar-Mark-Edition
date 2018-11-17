@@ -11,7 +11,6 @@ public class Node : IComparable<Node> {
     public float gCost;  // Path cost from one node to another
     public float hCost;  // Heuristic cost, which is the distance from the current position to the goal node
     public Node parentNode; // Parent of the expanded node
-    public List<Node> neighbors;
 
     public float FCost {
         get {

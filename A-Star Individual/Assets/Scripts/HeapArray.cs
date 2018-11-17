@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 /*
  * A Class that will carry our node heap array, to reduce search time of nodes
@@ -35,7 +33,7 @@ public class NodeHeapArray {
             return;
         }
 
-        BottomTopHeapify(); // relocate inserted item into its appropriate spot in our list
+        BottomTopHeapify(count); // relocate inserted item into its appropriate spot in our list
     }
 
 
@@ -49,6 +47,11 @@ public class NodeHeapArray {
 
         Node topValue = nodeArray[1];
 
+        if (count == 1) {
+            count = 0;
+            nodeArray.RemoveAt(1);
+            return topValue;
+        }
 
         if (count > 1)
         {
@@ -58,23 +61,22 @@ public class NodeHeapArray {
         }
         count--;
 
-        TopBottomHeapify();
+        TopBottomHeapify(1);
 
         return topValue;
     }
     
     /*
      * Re-arrange our heap from bottom to top. used when a new item is inserted
-     * at the bottom of the list (index = count).
+     * at the bottom of the list (index = count). This is uszed for A* too
      */ 
-    void BottomTopHeapify() {
-        int counter = count;    // Start at the bottom
+    public void BottomTopHeapify(int index) {
+        int counter = index;    // Start at the bottom
 
         // While the node stored in counterr is not on the right place, keep switching nodes
         // until it is on the right spot!
         while (counter > 1 && nodeArray[counter].CompareTo(nodeArray[GetParent(counter)]) < 0)
         {
-
             Node tempNode = nodeArray[GetParent(counter)];
             nodeArray[GetParent(counter)] = nodeArray[counter];
             nodeArray[counter] = tempNode;
@@ -83,51 +85,27 @@ public class NodeHeapArray {
     }
 
     /*
-     * Re-arrange our heap to preserve it's heapness. This is used when 
-     * an item is inserted at index 1, or and item is deleted.
+     * Re-arrange our heap downwards. This is used for pop operation
      */ 
-    void TopBottomHeapify()
-    {
-        // If there is only 1 or no item in our heap, then there is no the rearrange our heap.
-        if (count == 1 || count == 0)
-        {
-            return;
-        }
+    void TopBottomHeapify(int index) {
+        int leftChild = GetLeftChild(index);
+        int rightChild = GetRightChild(index);
 
-        // Start at index 1 instead of 0.
-        int currentNode = 1;
-
-        // While we are within bounds of the current array heap count
-        while (GetLeftChild(currentNode) <= count)
-        {
-            int child = GetLeftChild(currentNode);
-
-            
-            if (child + 1 <= count)
-            {    
-                // If the child is greater than the item beside it.
-                if (nodeArray[child].CompareTo(nodeArray[child+1]) > 0)
-                {
-                    child++;    // Move to the next child
-                }
-            }
-
-            // Otherwise, if the current node is greater than the child node
-            // We have to switch the 2 nodes around to preserve it's heap property
-            if (nodeArray[currentNode].CompareTo(nodeArray[child]) > 0)
-            {
-                Node tempNode = nodeArray[currentNode];
-                nodeArray[currentNode] = nodeArray[child];
-                nodeArray[child] = tempNode;
-                currentNode = child;
-            }
-            else
-            {
-                return;
-            }
+        int smallest;
+        if (leftChild <= count && nodeArray[leftChild].CompareTo(nodeArray[index]) < 0) {
+            smallest = leftChild;
+        } else {
+            smallest = index;
+        } 
+        if (rightChild <= count && nodeArray[rightChild].CompareTo(nodeArray[smallest]) < 0) {
+            smallest = rightChild;
+        } if (smallest != index) {
+            Node holder = nodeArray[index];
+            nodeArray[index] = nodeArray[smallest];
+            nodeArray[smallest] = holder;
+            TopBottomHeapify(smallest);
         }
     }
-    
 
     /*
      * Get the number of nodes currently stored in our array.
@@ -164,15 +142,7 @@ public class NodeHeapArray {
      * Check if item contains a certain node.
      */ 
     public bool Contains(Node node) {
-        if (this.Count() == 0) {
-            return false;
-        }
-        for (int i = 1; i <= count; i++) {
-            if (nodeArray[i].point == node.point) {
-                return true;
-            }
-        }
-        return false;
+        return nodeArray.Contains(node);
     }
 
     /*

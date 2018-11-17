@@ -4,117 +4,108 @@ using UnityEngine;
 
 public class Astar : MonoBehaviour {
 
-    WorldGrid grid;
+    WorldGrid grid;     // Reference to our grid object.
     private LinkedList<Node> finalPath = new LinkedList<Node>();
     public float bias;  // Bias Value to improve our heuristic. In this case, it seems that the higher the bias value is, the less
                         // nodes are checked!
+
     
-
-
     void Start () {
         grid = GameObject.Find("Grid").GetComponent<WorldGrid>();
     }
 
-    NodeHeapArray openSet = new NodeHeapArray();
-    List<Node> closedSet = new List<Node>();
-
+    /*
+     * A* algorithm. Customized to use a heap!
+     */ 
     void AStar(Vector2 startPoint, Vector2 endPoint) {
 
+        // A dictionary containing all the explored nodes so far. I used a dict so search time is constant!
+        Dictionary<Node, bool> explored = new Dictionary<Node, bool>();
+        // Heap array for our open set.
+        NodeHeapArray openSet = new NodeHeapArray();
+
+        // Reinatialize all nodes in our grid done
+        foreach (Node node in grid.gridNode) {
+            node.gCost = Mathf.Infinity;
+            node.hCost = Mathf.Infinity;
+            node.parentNode = null;
+            explored[node] = false;
+        }
+
+        // Player's grid position
         Vector2 playerGridPos = grid.WorldToGrid(startPoint);
+        // Goal's grid Position
         Vector2 endPointGridPos = grid.WorldToGrid(endPoint);
 
+        // Node corresponding to the player's grid position
         Node playerNode = grid.gridNode[(int)playerGridPos.x, (int)playerGridPos.y];
 
         playerNode.gCost = 0;
-        playerNode.hCost = HeuristicCost(playerGridPos, endPointGridPos, bias);
-
-        closedSet = new List<Node>();
-        openSet = new NodeHeapArray();
-
+        playerNode.hCost = HeuristicCost(playerGridPos, endPointGridPos);
         openSet.Push(playerNode);
-        
+
         while (openSet.Count() > 0) {
+
             Node current = openSet.Pop();
-            print(current.gCost);
-            closedSet.Add(current);
+            explored[current] = true;
 
+            // check if we found our goal!
             if (current.point == endPointGridPos) {
-                Node potato = current;
-                while (potato.parentNode != null) {
-                    finalPath.AddLast(potato);
-                    potato = potato.parentNode;
+                finalPath.Clear();  // Clear previous final path
+                int iterationCount = 10000;     // Ensures that we don't get stuck in an infinite cycle!
+                Node goal = grid.gridNode[(int)endPointGridPos.x, (int)endPointGridPos.y];
+                while (goal.parentNode != null && iterationCount > 0) {
+                    finalPath.AddLast(goal);
+                    goal = goal.parentNode;
+                    iterationCount--;
                 }
-
                 return;
             }
 
-            //print(openSet + " <<< ");
-
+            // Check all neighbors
             foreach (Node node in grid.GetNeighbors(current)) {
-                if (!ClosedContains(node)) {
-                    float tempGScore = current.gCost + HeuristicCost(current.point, node.point);
-                    if (!openSet.Contains(node)) {
-                        openSet.Push(node);
-                    } else if (tempGScore >= current.gCost) {
-                        continue;
-                    }
-                    if (node.parentNode == null)
-                        node.parentNode = current;
-                    node.gCost = node.parentNode.gCost + HeuristicCost(current.point, node.point);
-                    node.hCost = HeuristicCost(node.point, endPointGridPos, bias);
-
-                    
+                // New to be gCost. 
+                // Addding a bias value to the gCost significantly reduces the number
+                // of Nodes explored during search time!
+                float tentativeGScore = current.gCost + HeuristicCost(node.point, current.point, bias);     
+                // If the node has already been explored, or the gCost is higher htan the current node's gCost
+                // There's no point checking this node!
+                if (explored[node] || tentativeGScore >= node.gCost) {
+                    continue;
                 }
+                if (!openSet.Contains(node)) {
+                    openSet.Push(node);
+                }
+                // Update this node's information!
+                int nodeIndex = openSet.nodeArray.IndexOf(node);
+                node.parentNode = current;
+                node.gCost = tentativeGScore;
+                node.hCost = HeuristicCost(node.point, endPointGridPos);
+                openSet.BottomTopHeapify(nodeIndex);    // re-heapify our open set!                
             }
         }
     }
 
     // Update is called once per frame
-    void Update () {
+    void Update() {
         if (Input.GetKeyDown(KeyCode.Space))
             AStar(transform.position, GameObject.Find("GoalTile").transform.position);
 
-	}
-
-    float HeuristicCost(Vector2 nodePoint, Vector2 goalPoint, float biasValue=1) {
-        return Mathf.RoundToInt((Vector2.Distance(nodePoint, goalPoint))) * biasValue;
     }
 
-    public bool ClosedContains(Node node) {
-        foreach (Node node1 in closedSet) {
-            if (node1.point == node.point) {
-                return true;
-            }
-        }
-        return false;
+    // Heuristic cost which calculates the distance between a node and another node!
+    float HeuristicCost(Vector2 nodePoint, Vector2 goalPoint, float biasValue = 1) {
+        return Vector2.Distance(grid.GridToWorld(nodePoint, false), grid.GridToWorld(goalPoint, false)) * biasValue;
     }
 
     public void OnDrawGizmos() {
-        if (openSet.Count() > 0) {
-            foreach (Node node in openSet.nodeArray) {
-                if (node == null) continue;
-                Gizmos.color = Color.green;
-                Gizmos.DrawSphere(grid.GridToWorld(node.point, true), 0.2f);
-            }
-        }
-
-        if (closedSet.Count > 0) {
-            foreach (Node node in closedSet) {
-                if (node == null) continue;
-                Gizmos.color = Color.red;
-                Gizmos.DrawSphere(grid.GridToWorld(node.point, true), 0.2f);
-            }
-        }
-
-        if (finalPath!= null) {
+        if (finalPath != null) {
             foreach (Node node in finalPath) {
-                Gizmos.color = Color.yellow;
+                Gizmos.color = Color.black;
                 Gizmos.DrawSphere(grid.GridToWorld(node.point, true), 0.2f);
             }
         }
     }
-
-
 
 }
 
