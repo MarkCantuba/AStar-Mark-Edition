@@ -107,19 +107,23 @@ public class WorldGrid : MonoBehaviour {
         if (W && gridNode[x - 1, y].walkable) {
             neighbors.Add(gridNode[x - 1, y]);
         }
-        if (N && E && gridNode[x + 1, y + 1].walkable) { 
+        if (N && E && gridNode[x + 1, y + 1].walkable)
+        {
             neighbors.Add(gridNode[x + 1, y + 1]);
         }
-        if (N && W && gridNode[x - 1, y + 1].walkable) {
+        if (N && W && gridNode[x - 1, y + 1].walkable)
+        {
             neighbors.Add(gridNode[x - 1, y + 1]);
         }
-        if (S && E && gridNode[x + 1, y - 1].walkable) {
+        if (S && E && gridNode[x + 1, y - 1].walkable)
+        {
             neighbors.Add(gridNode[x + 1, y - 1]);
         }
-        if (S && W && gridNode[x - 1, y - 1].walkable) {
+        if (S && W && gridNode[x - 1, y - 1].walkable)
+        {
             neighbors.Add(gridNode[x - 1, y - 1]);
         }
-        
+
         return neighbors;
     }
 

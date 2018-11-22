@@ -247,7 +247,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridX: 50
   gridY: 50
-  drawGrid: 1
+  drawGrid: 0
   wall: {fileID: 1128682890349644, guid: 01f138c69b7abf94cadb31a3bd7e1176, type: 2}
 --- !u!4 &631131820
 Transform:
@@ -407,11 +407,11 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4152759995028596, guid: 57323bf22b43f8a40837f2c278adb725, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 0.5
+      value: -24.5
       objectReference: {fileID: 0}
     - target: {fileID: 4152759995028596, guid: 57323bf22b43f8a40837f2c278adb725, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 2.5
+      value: 24.5
       objectReference: {fileID: 0}
     - target: {fileID: 4152759995028596, guid: 57323bf22b43f8a40837f2c278adb725, type: 2}
       propertyPath: m_LocalPosition.z

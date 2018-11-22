@@ -5,24 +5,33 @@ using UnityEngine;
 public class Astar : MonoBehaviour {
 
     WorldGrid grid;     // Reference to our grid object.
+    public bool visualizer = true;
     private LinkedList<Node> finalPath = new LinkedList<Node>();
     public float bias;  // Bias Value to improve our heuristic. In this case, it seems that the higher the bias value is, the less
                         // nodes are checked!
-
+               
     
     void Start () {
         grid = GameObject.Find("Grid").GetComponent<WorldGrid>();
     }
 
+    List<Node> closedSet = new List<Node>();
+    NodeHeapArray openSet = new NodeHeapArray();
+
+
     /*
      * A* algorithm. Customized to use a heap!
      */ 
-    void AStar(Vector2 startPoint, Vector2 endPoint) {
+    IEnumerator AStar(Vector2 startPoint, Vector2 endPoint) {
 
         // A dictionary containing all the explored nodes so far. I used a dict so search time is constant!
         Dictionary<Node, bool> explored = new Dictionary<Node, bool>();
         // Heap array for our open set.
-        NodeHeapArray openSet = new NodeHeapArray();
+        openSet = new NodeHeapArray();
+        if (visualizer)
+        {
+            closedSet = new List<Node>();
+        }
 
         // Reinatialize all nodes in our grid done
         foreach (Node node in grid.gridNode) {
@@ -43,11 +52,15 @@ public class Astar : MonoBehaviour {
         playerNode.gCost = 0;
         playerNode.hCost = HeuristicCost(playerGridPos, endPointGridPos);
         openSet.Push(playerNode);
-
+        
         while (openSet.Count() > 0) {
-
+            yield return new WaitForEndOfFrame();
             Node current = openSet.Pop();
             explored[current] = true;
+            if (visualizer)
+            {
+                closedSet.Add(current);
+            }
 
             // check if we found our goal!
             if (current.point == endPointGridPos) {
@@ -59,7 +72,7 @@ public class Astar : MonoBehaviour {
                     goal = goal.parentNode;
                     iterationCount--;
                 }
-                return;
+                break;
             }
 
             // Check all neighbors
@@ -89,7 +102,7 @@ public class Astar : MonoBehaviour {
     // Update is called once per frame
     void Update() {
         if (Input.GetKeyDown(KeyCode.Space))
-            AStar(transform.position, GameObject.Find("GoalTile").transform.position);
+            StartCoroutine(AStar(transform.position, GameObject.Find("GoalTile").transform.position));
 
     }
 
@@ -99,6 +112,30 @@ public class Astar : MonoBehaviour {
     }
 
     public void OnDrawGizmos() {
+
+        if (visualizer)
+        {
+            if (closedSet.Count > 0)
+            {
+                foreach (Node node in closedSet)
+                {
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawSphere(grid.GridToWorld(node.point, true), 0.2f);
+                }
+            }
+            if (openSet.Count() > 0)
+            {
+                foreach (Node node in openSet.nodeArray)
+                {
+                    if (node != null)
+                    {
+                        Gizmos.color = Color.green;
+                        Gizmos.DrawSphere(grid.GridToWorld(node.point, true), 0.2f);
+                    }
+                }
+            }
+        }
+
         if (finalPath != null) {
             foreach (Node node in finalPath) {
                 Gizmos.color = Color.black;
