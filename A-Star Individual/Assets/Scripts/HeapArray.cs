@@ -27,7 +27,7 @@ public class NodeHeapArray {
         nodeArray.Add(node);
 
         count++;
-
+        node.index = count;
         // Base case. If there is only one item in our heap, there is no need to heapify list 
         if (count == 1) {  
             return;
@@ -56,6 +56,7 @@ public class NodeHeapArray {
         if (count > 1)
         {
             Node replace = nodeArray[count];
+            replace.index = 1;
             nodeArray[1] = replace;
             nodeArray.RemoveAt(count);
         }
@@ -78,8 +79,15 @@ public class NodeHeapArray {
         while (counter > 1 && nodeArray[counter].CompareTo(nodeArray[GetParent(counter)]) < 0)
         {
             Node tempNode = nodeArray[GetParent(counter)];
+            int ind = tempNode.index;
+
+            nodeArray[GetParent(counter)].index = nodeArray[counter].index;
             nodeArray[GetParent(counter)] = nodeArray[counter];
+            
+
+            nodeArray[counter].index = ind;
             nodeArray[counter] = tempNode;
+
             counter = GetParent(counter);
         }
     }
@@ -100,8 +108,14 @@ public class NodeHeapArray {
         if (rightChild <= count && nodeArray[rightChild].CompareTo(nodeArray[smallest]) < 0) {
             smallest = rightChild;
         } if (smallest != index) {
+
             Node holder = nodeArray[index];
+            int ind = holder.index;
+
+            nodeArray[index].index = nodeArray[smallest].index;
             nodeArray[index] = nodeArray[smallest];
+
+            nodeArray[smallest].index = ind;
             nodeArray[smallest] = holder;
             TopBottomHeapify(smallest);
         }

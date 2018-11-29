@@ -10,6 +10,7 @@ public class WorldGrid : MonoBehaviour {
     [Range(1, 1000)] public int gridY = 1;
     LayerMask wallMask;
     public bool drawGrid = false;
+    public bool considerDiags = true;
     public GameObject wall;
     LayerMask goal;
 
@@ -107,21 +108,24 @@ public class WorldGrid : MonoBehaviour {
         if (W && gridNode[x - 1, y].walkable) {
             neighbors.Add(gridNode[x - 1, y]);
         }
-        if (N && E && gridNode[x + 1, y + 1].walkable)
+        if (considerDiags)
         {
-            neighbors.Add(gridNode[x + 1, y + 1]);
-        }
-        if (N && W && gridNode[x - 1, y + 1].walkable)
-        {
-            neighbors.Add(gridNode[x - 1, y + 1]);
-        }
-        if (S && E && gridNode[x + 1, y - 1].walkable)
-        {
-            neighbors.Add(gridNode[x + 1, y - 1]);
-        }
-        if (S && W && gridNode[x - 1, y - 1].walkable)
-        {
-            neighbors.Add(gridNode[x - 1, y - 1]);
+            if (N && E && gridNode[x + 1, y + 1].walkable)
+            {
+                neighbors.Add(gridNode[x + 1, y + 1]);
+            }
+            if (N && W && gridNode[x - 1, y + 1].walkable)
+            {
+                neighbors.Add(gridNode[x - 1, y + 1]);
+            }
+            if (S && E && gridNode[x + 1, y - 1].walkable)
+            {
+                neighbors.Add(gridNode[x + 1, y - 1]);
+            }
+            if (S && W && gridNode[x - 1, y - 1].walkable)
+            {
+                neighbors.Add(gridNode[x - 1, y - 1]);
+            }
         }
 
         return neighbors;

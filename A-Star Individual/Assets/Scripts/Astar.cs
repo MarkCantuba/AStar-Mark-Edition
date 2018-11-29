@@ -52,7 +52,7 @@ public class Astar : MonoBehaviour {
         playerNode.gCost = 0;
         playerNode.hCost = HeuristicCost(playerGridPos, endPointGridPos);
         openSet.Push(playerNode);
-        
+        float startTime = Time.time;
         while (openSet.Count() > 0) {
             yield return new WaitForEndOfFrame();
             Node current = openSet.Pop();
@@ -64,6 +64,7 @@ public class Astar : MonoBehaviour {
 
             // check if we found our goal!
             if (current.point == endPointGridPos) {
+                print("Time elapsed: " + (Time.time - startTime));
                 finalPath.Clear();  // Clear previous final path
                 int iterationCount = 10000;     // Ensures that we don't get stuck in an infinite cycle!
                 Node goal = grid.gridNode[(int)endPointGridPos.x, (int)endPointGridPos.y];
@@ -90,11 +91,11 @@ public class Astar : MonoBehaviour {
                     openSet.Push(node);
                 }
                 // Update this node's information!
-                int nodeIndex = openSet.nodeArray.IndexOf(node);
+                //int nodeIndex = openSet.nodeArray.IndexOf(node);
                 node.parentNode = current;
                 node.gCost = tentativeGScore;
                 node.hCost = HeuristicCost(node.point, endPointGridPos);
-                openSet.BottomTopHeapify(nodeIndex);    // re-heapify our open set!                
+                openSet.BottomTopHeapify(node.index);    // re-heapify our open set!                
             }
         }
     }

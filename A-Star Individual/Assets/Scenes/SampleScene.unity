@@ -248,6 +248,7 @@ MonoBehaviour:
   gridX: 50
   gridY: 50
   drawGrid: 0
+  considerDiags: 1
   wall: {fileID: 1128682890349644, guid: 01f138c69b7abf94cadb31a3bd7e1176, type: 2}
 --- !u!4 &631131820
 Transform:
@@ -271,11 +272,11 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4004486269648552, guid: 66cefcfd6a9320a468ed823596413726, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 6.4
+      value: 24.4
       objectReference: {fileID: 0}
     - target: {fileID: 4004486269648552, guid: 66cefcfd6a9320a468ed823596413726, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -7.6
+      value: -24.6
       objectReference: {fileID: 0}
     - target: {fileID: 4004486269648552, guid: 66cefcfd6a9320a468ed823596413726, type: 2}
       propertyPath: m_LocalPosition.z
@@ -444,6 +445,16 @@ Prefab:
     - target: {fileID: 1380996843641314, guid: 57323bf22b43f8a40837f2c278adb725, type: 2}
       propertyPath: m_Layer
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 114193637590364378, guid: 57323bf22b43f8a40837f2c278adb725,
+        type: 2}
+      propertyPath: bias
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114193637590364378, guid: 57323bf22b43f8a40837f2c278adb725,
+        type: 2}
+      propertyPath: visualizer
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 57323bf22b43f8a40837f2c278adb725, type: 2}
