@@ -248,7 +248,7 @@ MonoBehaviour:
   gridX: 50
   gridY: 50
   drawGrid: 0
-  considerDiags: 1
+  considerDiags: 0
   wall: {fileID: 1128682890349644, guid: 01f138c69b7abf94cadb31a3bd7e1176, type: 2}
 --- !u!4 &631131820
 Transform:
